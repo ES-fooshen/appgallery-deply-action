@@ -150,7 +150,7 @@ function updateAppFileInfo({ fileDestUrl, size, appId, clientId, token, fileExt,
   return axios(config);
 }
 
-async function startDeply({ clientId, clientKey, appId, fileExt, filePath, fileName, submit }) {
+async function startDeply({ clientId, clientKey, appId, fileExt, filePath, fileName, submit, delay }) {
   try {
     const newToken = await getToken({
       clientId,
@@ -187,7 +187,11 @@ async function startDeply({ clientId, clientKey, appId, fileExt, filePath, fileN
     });
     if (updateFileInfo.data.ret.msg === "success") {
       console.log("successfully uploaded 🎉🎉🎉🎉🎉🎉");
+      
       if (submit === 'true') {
+        console.log("Waiting for upload to get processed...");
+        await new Promise(resolve => setTimeout(resolve, 1000 * delay));
+
         const submitResult = await submitApp({
           appId,
           clientId,
@@ -216,12 +220,13 @@ try {
   const filePath = core.getInput("file-path");
   const fileName = core.getInput("file-name");
   const submit = core.getInput("submit");
+  const delay = core.getInput("delay_before_submit_for_review");
 
   console.log(
     chalk.yellow(figlet.textSync("AppGallery", { horizontalLayout: "full" }))
   );
 
-  startDeply({ clientId, clientKey, appId, fileExt, filePath, fileName, submit });
+  startDeply({ clientId, clientKey, appId, fileExt, filePath, fileName, submit, delay });
 } catch (error) {
   core.setFailed(error.message);
 }
